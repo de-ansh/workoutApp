@@ -1,10 +1,10 @@
 {
   "profile": {
-    "name": "User",
+    "name": "Ansh",
     "goal": "Weight Loss",
-    "waterGoal": 2000,
-    "currentWater": 0,
-    "currentWeight": 75,
+    "waterGoal": 4000,
+    "currentWater": 1500,
+    "currentWeight": 69,
     "streak": 0
   },
   "plans": {
@@ -14,13 +14,92 @@
       "color": "#FF6B35",
       "difficulty": "Beginner",
       "equipment": "None",
-      "duration": 600,
+      "duration": 400,
       "exercises": [
-        { "id": 1, "name": "Jump Rope", "duration": 120, "type": "cardio", "rest": 15 },
-        { "id": 2, "name": "High Knees", "duration": 45, "type": "cardio", "rest": 15 },
-        { "id": 3, "name": "Burpees", "duration": 40, "type": "cardio", "rest": 20 },
-        { "id": 4, "name": "Plank", "duration": 60, "type": "abs", "rest": 15 },
-        { "id": 8, "name": "Mountain Climbers", "duration": 45, "type": "cardio", "rest": 20 }
+        {
+          "id": 1,
+          "name": "Jump Rope",
+          "duration": 120,
+          "type": "cardio",
+          "rest": 15,
+          "steps": [
+            "Rotate wrists only",
+            "Stay light on the balls of your feet",
+            "Keep jumps low to the ground"
+          ]
+        },
+        {
+          "id": 2,
+          "name": "High Knees",
+          "duration": 45,
+          "type": "cardio",
+          "rest": 15,
+          "steps": [
+            "Drive knees up towards your chest",
+            "Pump arms for momentum",
+            "Stay on your toes"
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Burpees",
+          "duration": 40,
+          "type": "cardio",
+          "rest": 20,
+          "steps": [
+            "Squat, kick back to plank",
+            "Optional pushup",
+            "Jump feet forward",
+            "Explosive vertical jump"
+          ]
+        },
+        {
+          "id": 4,
+          "name": "Jumping Jacks",
+          "duration": 60,
+          "type": "cardio",
+          "rest": 15,
+          "steps": [
+            "Simultaneous arm lift and leg spread",
+            "Sync movements with rhythmic jumps"
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Squats",
+          "duration": 45,
+          "type": "strength",
+          "rest": 15,
+          "steps": [
+            "Hips back first",
+            "Keep weight in heels",
+            "Chest up, eyes forward"
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Mountain Climbers",
+          "duration": 45,
+          "type": "cardio",
+          "rest": 20,
+          "steps": [
+            "Plank position",
+            "Alternate driving knees to chest rapidly",
+            "Keep hips low"
+          ]
+        },
+        {
+          "id": 7,
+          "name": "Plank",
+          "duration": 60,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Body in a straight line on forearms",
+            "Engage glutes and core",
+            "Keep neck neutral"
+          ]
+        }
       ]
     },
     "postgym": {
@@ -29,13 +108,104 @@
       "color": "#00D4AA",
       "difficulty": "Intermediate",
       "equipment": "Gym/Mat",
-      "duration": 900,
+      "duration": 750,
       "exercises": [
-        { "id": 1, "name": "Flex Rower", "duration": 500, "type": "cardio", "rest": 30 },
-        { "id": 3, "name": "Dead Bug", "duration": 45, "type": "abs", "rest": 15 },
-        { "id": 4, "name": "Cable Crunches", "duration": 40, "type": "abs", "rest": 15 },
-        { "id": 5, "name": "Hanging Knee Raise", "duration": 40, "type": "abs", "rest": 20 },
-        { "id": 11, "name": "Flutter Kicks", "duration": 40, "type": "abs", "rest": 15 }
+        {
+          "id": 1,
+          "name": "Weighted Crunches",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Lie on back, knees bent",
+            "Hold weight at chest",
+            "Lift shoulder blades off floor",
+            "Squeeze at top"
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Cable Crunches",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Kneel at the pulley",
+            "Grip the rope behind your head",
+            "Crunch down towards your knees",
+            "Exhale on contraction"
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Leg Raises",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Lie flat, hands under glutes",
+            "Lift legs to 90 degrees",
+            "Lower slowly without touching floor"
+          ]
+        },
+        {
+          "id": 4,
+          "name": "Reverse Crunches",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Lie flat, knees bent",
+            "Lift hips off the floor towards your chest",
+            "Control the descent"
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Dead Bug",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Lie on back, arms and legs up",
+            "Lower opposite arm and leg while keeping back flat"
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Russian Twists",
+          "duration": 40,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Sit with knees bent, feet up",
+            "Rotate torso to touch floor on each side"
+          ]
+        },
+        {
+          "id": 7,
+          "name": "Bicycle Crunches",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Alternate elbow to opposite knee",
+            "Perform in a cycling motion",
+            "Exhale with each twist"
+          ]
+        },
+        {
+          "id": 8,
+          "name": "Plank",
+          "duration": 60,
+          "type": "abs",
+          "rest": 20,
+          "steps": [
+            "Body in a straight line on forearms",
+            "Engage glutes and core",
+            "Keep neck neutral"
+          ]
+        }
       ]
     },
     "pilates": {
@@ -44,12 +214,66 @@
       "color": "#7B61FF",
       "difficulty": "Beginner",
       "equipment": "Wall",
-      "duration": 900,
+      "duration": 300,
       "exercises": [
-        { "id": "p1", "name": "Wall Sit", "duration": 45, "type": "abs", "rest": 15 },
-        { "id": "p2", "name": "Wall Pushups", "duration": 40, "type": "cardio", "rest": 15 },
-        { "id": "p3", "name": "Leg Up Wall", "duration": 60, "type": "abs", "rest": 15 },
-        { "id": "p4", "name": "Wall Bridge", "duration": 45, "type": "abs", "rest": 15 }
+        {
+          "id": "p1",
+          "name": "Wall Sit",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Back flat against wall",
+            "Thighs parallel to floor",
+            "Hold position"
+          ]
+        },
+        {
+          "id": "p2",
+          "name": "Wall Pushups",
+          "duration": 40,
+          "type": "cardio",
+          "rest": 15,
+          "steps": [
+            "Hands on wall at chest height",
+            "Lean in and push back",
+            "Keep core tight"
+          ]
+        },
+        {
+          "id": "p3",
+          "name": "Leg Up Wall",
+          "duration": 60,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Legs straight up against wall",
+            "Keep lower back on ground",
+            "Engage core"
+          ]
+        },
+        {
+          "id": "p4",
+          "name": "Wall Bridge",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Feet flat on wall",
+            "Lift hips towards ceiling",
+            "Squeeze glutes"
+          ]
+        },
+        {
+          "id": "p5",
+          "name": "Wall Assisted V-Ups",
+          "duration": 45,
+          "type": "abs",
+          "rest": 15,
+          "steps": [
+            "Lift upper body and legs simultaneously while using wall for guide"
+          ]
+        }
       ]
     },
     "yoga": {
@@ -58,11 +282,55 @@
       "color": "#FFB800",
       "difficulty": "Beginner",
       "equipment": "Mat",
-      "duration": 600,
+      "duration": 320,
       "exercises": [
-        { "id": "y1", "name": "Sun Salutation", "duration": 120, "type": "warmup", "rest": 10 },
-        { "id": "y2", "name": "Warrior Pose", "duration": 45, "type": "abs", "rest": 10 },
-        { "id": "y3", "name": "Child's Pose", "duration": 60, "type": "warmup", "rest": 0 }
+        {
+          "id": "y1",
+          "name": "Sun Salutation",
+          "duration": 120,
+          "type": "warmup",
+          "rest": 10,
+          "steps": [
+            "Flow from mountain pose to forward fold",
+            "Move to plank, then up-dog and down-dog"
+          ]
+        },
+        {
+          "id": "y2",
+          "name": "Warrior Pose",
+          "duration": 45,
+          "type": "abs",
+          "rest": 10,
+          "steps": [
+            "Lunged position, back foot at 45 deg",
+            "Arms lifted above head",
+            "Core engaged"
+          ]
+        },
+        {
+          "id": "y3",
+          "name": "Cat-Cow Stretch",
+          "duration": 30,
+          "type": "warmup",
+          "rest": 10,
+          "steps": [
+            "On all fours",
+            "Arch back on inhale (cow)",
+            "Round back on exhale (cat)"
+          ]
+        },
+        {
+          "id": "y4",
+          "name": "Child's Pose",
+          "duration": 60,
+          "type": "warmup",
+          "rest": 0,
+          "steps": [
+            "Kneel and sit on heels",
+            "Extend arms forward, head on floor",
+            "Breath through the back"
+          ]
+        }
       ]
     }
   },

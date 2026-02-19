@@ -12,7 +12,7 @@ interface PlanEditorProps {
 export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
     const [activeTab, setActiveTab] = useState<string>("morning");
     const [showModal, setShowModal] = useState(false);
-    const [newEx, setNewEx] = useState<Omit<Exercise, 'id'>>({ name: "", type: "cardio", duration: 45, rest: 15 });
+    const [newEx, setNewEx] = useState<Omit<Exercise, 'id'>>({ name: "", type: "cardio", duration: 45, rest: 15, steps: [] });
     const [poolSel, setPoolSel] = useState("");
 
     const plan = plans[activeTab];
@@ -30,16 +30,16 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
         setPlans(next);
         updateDB({ plans: next });
         setShowModal(false);
-        setNewEx({ name: "", type: "cardio", duration: 45, rest: 15 });
+        setNewEx({ name: "", type: "cardio", duration: 45, rest: 15, steps: [] });
     };
 
     const applyPool = () => {
         const f = EXERCISE_POOL.find(e => e.name === poolSel);
-        if (f) setNewEx(n => ({ ...n, name: f.name, type: f.type as any, duration: f.defaultDur }));
+        if (f) setNewEx(n => ({ ...n, name: f.name, type: f.type as any, duration: f.defaultDur, steps: f.steps || [] }));
     };
 
     return (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-5xl m-0 text-white">Edit Plans</h1>
                 <button onClick={onClose} className="text-gray-500 text-3xl p-2 hover:text-white transition-colors">✕</button>
@@ -70,15 +70,27 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
 
                 <div className="space-y-3">
                     {plan.exercises.map((ex, i) => (
-                        <div key={ex.id} className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between group hover:bg-white/[0.08] transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className="text-xs text-gray-500 font-bold w-4">{i + 1}</div>
-                                <div>
-                                    <div className="font-bold text-sm text-white">{ex.name}</div>
-                                    <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{ex.duration}s · {ex.type}</div>
+                        <div key={ex.id} className="bg-white/5 border border-white/5 rounded-2xl p-4 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-4">
+                                    <div className="text-xs text-gray-500 font-bold w-4">{i + 1}</div>
+                                    <div>
+                                        <div className="font-bold text-sm text-white">{ex.name}</div>
+                                        <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{ex.duration}s · {ex.type}</div>
+                                    </div>
                                 </div>
+                                <button onClick={() => removeEx(ex.id)} className="text-gray-600 hover:text-red-400 transition-colors p-2 text-sm">✕</button>
                             </div>
-                            <button onClick={() => removeEx(ex.id)} className="text-gray-600 hover:text-red-400 transition-colors p-2 text-sm">✕</button>
+                            {ex.steps && ex.steps.length > 0 && (
+                                <div className="ml-8 mt-2 space-y-1">
+                                    {ex.steps.map((s, idx) => (
+                                        <div key={idx} className="text-[10px] text-gray-400 flex gap-2">
+                                            <span className="text-primary">•</span>
+                                            <span>{s}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -125,6 +137,7 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
                                         <option value="cardio" className="bg-[#121216]">Cardio</option>
                                         <option value="abs" className="bg-[#121216]">Abs</option>
                                         <option value="warmup" className="bg-[#121216]">Warm-up</option>
+                                        <option value="strength" className="bg-[#121216]">Strength</option>
                                     </select>
                                 </div>
                                 <div>

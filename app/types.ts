@@ -2,8 +2,9 @@ export interface Exercise {
     id: number | string;
     name: string;
     duration: number;
-    type: "cardio" | "abs" | "warmup";
+    type: "cardio" | "abs" | "warmup" | "strength";
     rest: number;
+    steps?: string[];
 }
 
 export interface Plan {

@@ -89,6 +89,8 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
         };
     }, [running, done, advance, isRest, soundOn, getAudio]);
 
+    const [showSteps, setShowSteps] = useState(false);
+
     const handleStart = () => {
         if (soundOn) playGo(getAudio());
         setRunning(true);
@@ -130,7 +132,7 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
     }
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div className="animate-in fade-in duration-500 pb-20">
             <div className="flex items-center gap-4 mb-4">
                 <button onClick={onExit} className="text-gray-500 text-3xl p-2">✕</button>
                 <div className="flex-1">
@@ -153,7 +155,7 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
 
             <CircularTimer current={timeLeft} total={total} isRest={isRest} isRunning={running} color={plan.color} />
 
-            <div className="flex items-center justify-center gap-12 mt-8">
+            <div className="flex items-center justify-center gap-12 mt-8 mb-12">
                 <button onClick={() => setExIdx(0)} className="text-gray-600 text-2xl p-4 active:scale-90 transition-transform text-white">↺</button>
                 <button
                     onClick={running ? () => setRunning(false) : handleStart}
@@ -163,6 +165,28 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
                 </button>
                 <button onClick={skip} className="text-gray-600 text-2xl p-4 active:scale-90 transition-transform text-white">⏭</button>
             </div>
+
+            {currentEx?.steps && currentEx.steps.length > 0 && (
+                <div className="mb-12">
+                    <button
+                        onClick={() => setShowSteps(!showSteps)}
+                        className="w-full flex justify-between items-center px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-all font-bold heading-bebas tracking-widest"
+                    >
+                        <span>📖 INSTRUCTIONS</span>
+                        <span>{showSteps ? '−' : '+'}</span>
+                    </button>
+                    {showSteps && (
+                        <div className="mt-4 space-y-3 animate-in slide-in-from-top-2 duration-300">
+                            {currentEx.steps.map((step, idx) => (
+                                <div key={idx} className="flex gap-4 items-start bg-white/[0.02] p-4 rounded-2xl border border-white/5">
+                                    <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">{idx + 1}</div>
+                                    <div className="text-gray-400 text-sm leading-relaxed">{step}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="mt-16">
                 <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-[.3em] mb-6 px-2">Up Next</h3>
