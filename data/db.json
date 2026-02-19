@@ -1,0 +1,77 @@
+{
+  "profile": {
+    "name": "User",
+    "goal": "Weight Loss",
+    "waterGoal": 2000,
+    "currentWater": 0,
+    "currentWeight": 75,
+    "streak": 0
+  },
+  "plans": {
+    "morning": {
+      "label": "Morning",
+      "emoji": "☀️",
+      "color": "#FF6B35",
+      "difficulty": "Beginner",
+      "equipment": "None",
+      "duration": 600,
+      "exercises": [
+        { "id": 1, "name": "Jump Rope", "duration": 120, "type": "cardio", "rest": 15 },
+        { "id": 2, "name": "High Knees", "duration": 45, "type": "cardio", "rest": 15 },
+        { "id": 3, "name": "Burpees", "duration": 40, "type": "cardio", "rest": 20 },
+        { "id": 4, "name": "Plank", "duration": 60, "type": "abs", "rest": 15 },
+        { "id": 8, "name": "Mountain Climbers", "duration": 45, "type": "cardio", "rest": 20 }
+      ]
+    },
+    "postgym": {
+      "label": "Post-Gym",
+      "emoji": "💪",
+      "color": "#00D4AA",
+      "difficulty": "Intermediate",
+      "equipment": "Gym/Mat",
+      "duration": 900,
+      "exercises": [
+        { "id": 1, "name": "Flex Rower", "duration": 500, "type": "cardio", "rest": 30 },
+        { "id": 3, "name": "Dead Bug", "duration": 45, "type": "abs", "rest": 15 },
+        { "id": 4, "name": "Cable Crunches", "duration": 40, "type": "abs", "rest": 15 },
+        { "id": 5, "name": "Hanging Knee Raise", "duration": 40, "type": "abs", "rest": 20 },
+        { "id": 11, "name": "Flutter Kicks", "duration": 40, "type": "abs", "rest": 15 }
+      ]
+    },
+    "pilates": {
+      "label": "Wall Pilates",
+      "emoji": "🧘",
+      "color": "#7B61FF",
+      "difficulty": "Beginner",
+      "equipment": "Wall",
+      "duration": 900,
+      "exercises": [
+        { "id": "p1", "name": "Wall Sit", "duration": 45, "type": "abs", "rest": 15 },
+        { "id": "p2", "name": "Wall Pushups", "duration": 40, "type": "cardio", "rest": 15 },
+        { "id": "p3", "name": "Leg Up Wall", "duration": 60, "type": "abs", "rest": 15 },
+        { "id": "p4", "name": "Wall Bridge", "duration": 45, "type": "abs", "rest": 15 }
+      ]
+    },
+    "yoga": {
+      "label": "Morning Yoga",
+      "emoji": "🧘‍♀️",
+      "color": "#FFB800",
+      "difficulty": "Beginner",
+      "equipment": "Mat",
+      "duration": 600,
+      "exercises": [
+        { "id": "y1", "name": "Sun Salutation", "duration": 120, "type": "warmup", "rest": 10 },
+        { "id": "y2", "name": "Warrior Pose", "duration": 45, "type": "abs", "rest": 10 },
+        { "id": "y3", "name": "Child's Pose", "duration": 60, "type": "warmup", "rest": 0 }
+      ]
+    }
+  },
+  "history": {},
+  "dailyTips": [
+    "Stay hydrated! Aim for at least 8 glasses of water today.",
+    "Small progress is still progress. Keep going!",
+    "Consistency is key. You've got this!",
+    "Listen to your body. Rest when you need to.",
+    "A 15-minute workout is better than no workout."
+  ]
+}

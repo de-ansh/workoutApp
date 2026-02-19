@@ -1,0 +1,43 @@
+export interface Exercise {
+    id: number | string;
+    name: string;
+    duration: number;
+    type: "cardio" | "abs" | "warmup";
+    rest: number;
+}
+
+export interface Plan {
+    label: string;
+    emoji?: string;
+    color: string;
+    exercises: Exercise[];
+    difficulty?: string;
+    equipment?: string;
+    duration?: number;
+}
+
+export type Plans = Record<string, Plan>;
+
+export interface Profile {
+    name: string;
+    goal: string;
+    waterGoal: number;
+    currentWater: number;
+    currentWeight: number;
+    streak: number;
+}
+
+export interface WorkoutEntry {
+    planKey: string;
+    mins: number;
+    time: string;
+}
+
+export type History = Record<string, WorkoutEntry[]>;
+
+export interface DBData {
+    profile: Profile;
+    plans: Plans;
+    history: History;
+    dailyTips: string[];
+}
