@@ -6,7 +6,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#7B61FF" />
         <meta name="description" content="Daily Grind - Your personal cardio & abs workout companion. Track sessions, monitor progress, and stay hydrated." />
         <meta name="keywords" content="workout, fitness, cardio, abs, exercise, tracker, health" />

@@ -19,13 +19,12 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent accidental zoom and scrolling */
-  -webkit-touch-callout: none;
+  /* Support scrolling while preventing horizontal jitter */
+  overflow-x: hidden;
   -webkit-user-select: none;
   user-select: none;
-  touch-action: manipulation;
-  /* Prevent pull-to-refresh on mobile */
-  overscroll-behavior: none;
+  /* Allow natural scrolling on mobile */
+  overscroll-behavior-y: auto;
 }
 
 /* Ensure buttons have proper touch targets */
