@@ -167,7 +167,7 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
     return (
         <div className="animate-in fade-in duration-500 pb-20">
             <div className="flex items-center gap-4 mb-4">
-                <button 
+                <button
                     onMouseDown={handleExitPress}
                     onMouseUp={handleExitRelease}
                     onMouseLeave={handleExitRelease}
@@ -194,17 +194,29 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
                 <div className={`text-[10px] font-bold uppercase tracking-[.4em] mb-2 ${isWarmupPhase ? 'text-gray-500' : 'text-primary'}`}>
                     {isWarmupPhase ? 'Warm-up Phase' : currentEx?.type}
                 </div>
-                <h2 className="text-4xl m-0 heading-bebas tracking-tight text-white">{currentEx?.name}</h2>
+                <h2 className="text-4xl m-0 heading-bebas tracking-tight text-white mb-8">{currentEx?.name}</h2>
+
+                {/* Visual Guide Placeholder */}
+                <div className="relative h-32 flex items-center justify-center mb-8">
+                    <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full scale-150" />
+                    <div className="relative text-7xl float-animation">
+                        <div className="exercise-pulse">
+                            {currentEx?.type === 'abs' ? '🧘' : isWarmupPhase ? '🧘' : '⚡'}
+                        </div>
+                    </div>
+                    {/* Shimmer background */}
+                    <div className="absolute inset-0 glow-shimmer opacity-20 pointer-events-none rounded-3xl" />
+                </div>
             </div>
 
             <CircularTimer current={timeLeft} total={total} isRest={isRest} isRunning={running} color={plan.color} />
 
             <div className="flex items-center justify-center gap-8 mt-10 mb-12">
                 {/* Reset button - increased touch target */}
-                <button 
+                <button
                     onMouseDown={() => setExIdx(0)}
                     onTouchStart={() => setExIdx(0)}
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl text-gray-600 hover:text-white hover:bg-white/5 transition-all active:scale-90" 
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl text-gray-600 hover:text-white hover:bg-white/5 transition-all active:scale-90"
                     title="Reset to first exercise"
                 >
                     ↺
@@ -220,7 +232,7 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
                 </button>
 
                 {/* Skip button - hold to prevent accidental skip */}
-                <button 
+                <button
                     onMouseDown={handleSkipPress}
                     onMouseUp={handleSkipRelease}
                     onMouseLeave={handleSkipRelease}
@@ -232,7 +244,7 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
                     ⏭
                 </button>
             </div>
-            
+
             {holdingSkip && (
                 <div className="text-center mb-4 text-primary text-sm font-bold animate-pulse">
                     ⏱ Hold {(1 - Math.max(0, Date.now() - lastActionTime) / 1000).toFixed(1)}s to skip

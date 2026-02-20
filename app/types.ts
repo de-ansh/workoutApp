@@ -41,10 +41,29 @@ export type History = Record<string, WorkoutEntry[]>;
 /** Water intake history: Record<YYYY-MM-DD, ml consumed> */
 export type WaterHistory = Record<string, number>;
 
+export interface Challenge {
+    id: string;
+    title: string;
+    desc: string;
+    days: number;
+    exercisesPerDay: number;
+    difficulty: string;
+    rewardEmoji: string;
+}
+
+export interface ChallengeProgress {
+    challengeId: string;
+    currentDay: number;
+    completedDate?: string;
+}
+
 export interface DBData {
     profile: Profile;
     plans: Plans;
     history: History;
     waterHistory: WaterHistory;
+    weightHistory: Record<string, number>;
+    achievements: string[];
+    activeChallenges: Record<string, ChallengeProgress>;
     dailyTips: string[];
 }

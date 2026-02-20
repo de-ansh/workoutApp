@@ -18,9 +18,13 @@ import { HistoryView } from "./components/HistoryView";
 import { WorkoutSession } from "./components/WorkoutSession";
 import { PlanEditor } from "./components/PlanEditor";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { WeightChart } from "./components/WeightChart";
+import { AchievementsView } from "./components/AchievementsView";
+import { ChallengesView } from "./components/ChallengesView";
+import { CALISTHENICS_CHALLENGES, EXERCISE_POOL } from "./constants";
 
 export default function App() {
-  const [view, setView] = useState<"today" | "workouts" | "history" | "settings">("today");
+  const [view, setView] = useState<"today" | "workouts" | "history" | "settings" | "trophies" | "challenges">("today");
   const [showEditor, setShowEditor] = useState(false);
   const [sessionPlan, setSessionPlan] = useState<string | null>(null);
   const [data, setData] = useState<DBData | null>(null);
@@ -127,9 +131,33 @@ export default function App() {
 
       const newStreak = computeStreak(newHistory);
 
+      // Achievement logic
+      const unlocked = [...(data.achievements || [])];
+
+      // Challenge progress logic
+      const activeChallenges = { ...(data.activeChallenges || {}) };
+      if (planKey.startsWith('challenge_')) {
+        const challengeId = planKey.replace('challenge_', '').split('_day_')[0];
+        if (activeChallenges[challengeId]) {
+          activeChallenges[challengeId].currentDay += 1;
+          if (activeChallenges[challengeId].currentDay > 7) { // Completion
+            if (!unlocked.includes('cali_master')) unlocked.push('cali_master');
+          }
+        }
+      }
+
+      if (!unlocked.includes('first_workout')) unlocked.push('first_workout');
+      if (newStreak >= 3 && !unlocked.includes('streak_3')) unlocked.push('streak_3');
+
+      const hour = new Date().getHours();
+      if (hour < 9 && !unlocked.includes('early_bird')) unlocked.push('early_bird');
+      if (hour >= 21 && !unlocked.includes('night_owl')) unlocked.push('night_owl');
+
       const update = {
         history: newHistory,
-        profile: { ...data.profile, streak: newStreak }
+        profile: { ...data.profile, streak: newStreak },
+        achievements: unlocked,
+        activeChallenges: activeChallenges
       };
 
       setData({ ...data, ...update });
@@ -163,18 +191,104 @@ export default function App() {
   const saveProfileField = async (field: string, value: any) => {
     if (!data) return;
     try {
-      const update = {
+      const update: any = {
         profile: {
           ...data.profile,
           [field]: value,
         }
       };
+
+      // Special case for weight: also log to weightHistory
+      if (field === 'currentWeight') {
+        const today = todayKey();
+        update.weightHistory = {
+          ...(data.weightHistory || {}),
+          [today]: value
+        };
+
+        const unlocked = [...(data.achievements || [])];
+        if (!unlocked.includes('weight_logged')) {
+          unlocked.push('weight_logged');
+          update.achievements = unlocked;
+        }
+      }
+
       setData({ ...data, ...update });
       await updateDB(update);
     } catch (e) {
       console.error('Failed to save profile change:', e);
       alert('Failed to save changes. Please try again.');
     }
+  };
+
+  const startChallenge = async (challengeId: string) => {
+    if (!data) return;
+    const update = {
+      activeChallenges: {
+        ...(data.activeChallenges || {}),
+        [challengeId]: { challengeId, currentDay: 1 }
+      }
+    };
+    setData({ ...data, ...update });
+    await updateDB(update);
+  };
+
+  const startChallengeWorkout = (challengeId: string) => {
+    if (!data) return;
+    const progress = data.activeChallenges?.[challengeId];
+    if (!progress) return;
+
+    const challenge = CALISTHENICS_CHALLENGES.find(c => c.id === challengeId);
+    if (!challenge) return;
+
+    // Generate a specific plan for the challenge day
+    const caliExercises = EXERCISE_POOL.filter(ex =>
+      ex.name === "Pushups" ||
+      ex.name === "Pullups" ||
+      ex.name === "Dips" ||
+      ex.name === "Squats" ||
+      ex.name === "Plank" ||
+      ex.name === "Pistol Squats" ||
+      ex.name === "L-Sit"
+    );
+
+    // Pick random exercises but consistent per day seed
+    const seed = progress.currentDay + challengeId.length;
+    const dayExercises = [];
+    for (let i = 0; i < challenge.exercisesPerDay; i++) {
+      const idx = (seed + i) % caliExercises.length;
+      const base = caliExercises[idx];
+      dayExercises.push({
+        id: `ch_${challengeId}_d${progress.currentDay}_e${i}`,
+        name: base.name,
+        type: base.type as any,
+        duration: (base as any).defaultDur || 45,
+        rest: 15,
+        steps: (base as any).steps
+      });
+    }
+
+    const tempPlan: any = { // Using 'any' for Plan type as it's not fully defined here
+      label: `${challenge.title} - Day ${progress.currentDay}`,
+      color: "#7B61FF",
+      exercises: dayExercises
+    };
+
+    // Use a special key to track challenge progression on completion
+    const specialKey = `challenge_${challengeId}_day_${progress.currentDay}`;
+
+    // Bypass the normal plans and start session directly
+    setSessionPlan(specialKey);
+    // Since sessionPlan is just a key, we need to handle the plan lookup in the render or inject it.
+    // In our current page logic, sessionPlan triggers a lookup in data.plans[sessionPlan].
+    // Let's hack it for now by injecting it into a temp state or data.plans.
+    setData({
+      ...data,
+      plans: {
+        ...data.plans,
+        [specialKey]: tempPlan
+      }
+    });
   };
 
   if (loading || !data) {
@@ -191,7 +305,7 @@ export default function App() {
     const plan = data.plans[sessionPlan];
     if (!plan) return null;
     return (
-      <div 
+      <div
         style={{
           position: 'fixed',
           top: 0,
@@ -305,7 +419,26 @@ export default function App() {
               </div>
             )}
 
-            {view === "history" && <HistoryView history={data.history} plans={data.plans} onClose={() => setView("today")} />}
+            {view === "history" && (
+              <div className="space-y-8">
+                <HistoryView history={data.history} plans={data.plans} onClose={() => setView("today")} />
+                {data.weightHistory && Object.keys(data.weightHistory).length > 0 && (
+                  <div className="glass rounded-[32px] p-6 border-white/5 bg-white/[0.02]">
+                    <WeightChart data={data.weightHistory} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {view === "trophies" && <AchievementsView unlockedIds={data.achievements || []} />}
+
+            {view === "challenges" && (
+              <ChallengesView
+                activeChallenges={data.activeChallenges || {}}
+                onStartChallenge={startChallenge}
+                onStartWorkout={startChallengeWorkout}
+              />
+            )}
 
             {view === "settings" && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -319,7 +452,7 @@ export default function App() {
                 </div>
                 <div className="glass rounded-[32px] p-6 border-white/5 bg-white/[0.02]">
                   <h3 className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-4 px-1">Profile</h3>
-                  
+
                   {/* Name */}
                   <div className="py-4 border-b border-white/5">
                     {editName ? (
@@ -501,7 +634,9 @@ export default function App() {
       {!showEditor && (
         <nav className="fixed bottom-6 left-6 right-6 h-20 glass-dark rounded-[24px] flex items-center justify-around px-2 z-50 shadow-2xl border border-white/5">
           <NavBtn active={view === "today"} icon="🎯" label="Today" onClick={() => setView("today")} />
+          <NavBtn active={view === "challenges"} icon="⚡" label="Challenge" onClick={() => setView("challenges")} />
           <NavBtn active={view === "workouts"} icon="💪" label="Workouts" onClick={() => setView("workouts")} />
+          <NavBtn active={view === "trophies"} icon="🏆" label="Badges" onClick={() => setView("trophies")} />
           <NavBtn active={view === "history"} icon="📈" label="History" onClick={() => setView("history")} />
           <NavBtn active={view === "settings"} icon="⚙️" label="Settings" onClick={() => setView("settings")} />
         </nav>

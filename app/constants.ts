@@ -46,4 +46,23 @@ export const EXERCISE_POOL = [
     { name: "Lunges", type: "strength", defaultDur: 50, steps: ["Big step forward", "Back knee almost touches floor", "Keep torso upright"] },
     { name: "Glute Bridges", type: "strength", defaultDur: 45, steps: ["Lie on back, feet flat on floor", "Lift hips as high as possible", "Squeeze glutes at top"] },
     { name: "Diamond Pushups", type: "strength", defaultDur: 30, steps: ["Form a diamond with hands", "Keep elbows close to side", "Focus on triceps"] },
+
+    // Calisthenics
+    { name: "Pullups", type: "strength", defaultDur: 45, steps: ["Grip the bar wider than shoulders", "Pull chest to bar", "Slow, controlled descent"] },
+    { name: "Dips", type: "strength", defaultDur: 40, steps: ["Lower until elbows are at 90 degrees", "Push back up without locking elbows", "Keep chest slightly forward"] },
+    { name: "Pistol Squats", type: "strength", defaultDur: 50, steps: ["Balance on one leg", "Lower into a full squat", "Extend other leg forward", "Drive back up"] },
+    { name: "Muscle-ups", type: "strength", defaultDur: 30, steps: ["Explosive pullup", "Transition grip above bar", "Dip to lock out"] },
+    { name: "L-Sit", type: "strength", defaultDur: 30, steps: ["Hands on floor/bars", "Lift legs parallel to floor", "Keep back straight and core tight"] },
+];
+
+export const CALISTHENICS_CHALLENGES = [
+    {
+        id: "cali_foundation_7",
+        title: "7-Day Foundation",
+        desc: "Build the raw strength for advanced calisthenics.",
+        days: 7,
+        exercisesPerDay: 5,
+        difficulty: "Intermediate",
+        rewardEmoji: "👑"
+    }
 ];
