@@ -14,23 +14,43 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
     const [showModal, setShowModal] = useState(false);
     const [newEx, setNewEx] = useState<Omit<Exercise, 'id'>>({ name: "", type: "cardio", duration: 45, rest: 15, steps: [] });
     const [poolSel, setPoolSel] = useState("");
+    const [deleteConfirm, setDeleteConfirm] = useState<string | number | null>(null);
+    const [saving, setSaving] = useState(false);
 
     const plan = plans[activeTab];
     if (!plan) return null;
 
-    const removeEx = (id: number | string) => {
-        const next = { ...plans, [activeTab]: { ...plans[activeTab], exercises: plans[activeTab].exercises.filter(e => e.id !== id) } };
-        setPlans(next);
-        updateDB({ plans: next });
+    const removeEx = async (id: number | string) => {
+        setSaving(true);
+        try {
+            const next = { ...plans, [activeTab]: { ...plans[activeTab], exercises: plans[activeTab].exercises.filter(e => e.id !== id) } };
+            setPlans(next);
+            await updateDB({ plans: next });
+            setDeleteConfirm(null);
+        } catch (e) {
+            console.error('Failed to delete exercise:', e);
+            alert('Failed to delete exercise. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const addEx = () => {
-        const ex: Exercise = { ...newEx, id: Date.now() };
-        const next = { ...plans, [activeTab]: { ...plans[activeTab], exercises: [...plans[activeTab].exercises, ex] } };
-        setPlans(next);
-        updateDB({ plans: next });
-        setShowModal(false);
-        setNewEx({ name: "", type: "cardio", duration: 45, rest: 15, steps: [] });
+    const addEx = async () => {
+        if (!newEx.name.trim()) return;
+        setSaving(true);
+        try {
+            const ex: Exercise = { ...newEx, id: Date.now() };
+            const next = { ...plans, [activeTab]: { ...plans[activeTab], exercises: [...plans[activeTab].exercises, ex] } };
+            setPlans(next);
+            await updateDB({ plans: next });
+            setShowModal(false);
+            setNewEx({ name: "", type: "cardio", duration: 45, rest: 15, steps: [] });
+        } catch (e) {
+            console.error('Failed to add exercise:', e);
+            alert('Failed to add exercise. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const applyPool = () => {
@@ -76,11 +96,18 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
                                     <div className="text-xs text-gray-500 font-bold w-4">{i + 1}</div>
                                     <div>
                                         <div className="font-bold text-sm text-white">{ex.name}</div>
-                                        <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{ex.duration}s · {ex.type}</div>
-                                    </div>
-                                </div>
-                                <button onClick={() => removeEx(ex.id)} className="text-gray-600 hover:text-red-400 transition-colors p-2 text-sm">✕</button>
-                            </div>
+                                        <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{ex.duration}s · {ex.rest}s rest · {ex.type}</div>
+                                                 </div>
+                                             </div>
+                                             {deleteConfirm === ex.id ? (
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => removeEx(ex.id)} disabled={saving} className="text-xs bg-red-500 text-white px-3 py-1 rounded font-bold hover:bg-red-600 disabled:opacity-50">Delete</button>
+                                                    <button onClick={() => setDeleteConfirm(null)} disabled={saving} className="text-xs bg-gray-700 text-white px-3 py-1 rounded font-bold hover:bg-gray-600 disabled:opacity-50">Cancel</button>
+                                                </div>
+                                            ) : (
+                                                <button onClick={() => setDeleteConfirm(ex.id)} className="text-gray-600 hover:text-red-400 transition-colors p-2 text-sm">✕</button>
+                                            )}
+                                         </div>
                             {ex.steps && ex.steps.length > 0 && (
                                 <div className="ml-8 mt-2 space-y-1">
                                     {ex.steps.map((s, idx) => (
@@ -149,6 +176,15 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
                                         onChange={e => setNewEx(n => ({ ...n, duration: +e.target.value }))}
                                     />
                                 </div>
+                                <div>
+                                    <label className="text-[10px] text-gray-500 uppercase tracking-[.2em] font-bold block mb-2 px-1">Rest Time (s)</label>
+                                    <input
+                                        type="number"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:border-primary focus:outline-none transition-colors text-white"
+                                        value={newEx.rest}
+                                        onChange={e => setNewEx(n => ({ ...n, rest: +e.target.value }))}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -161,10 +197,10 @@ export function PlanEditor({ plans, setPlans, onClose }: PlanEditorProps) {
                             </button>
                             <button
                                 onClick={addEx}
-                                disabled={!newEx.name}
+                                disabled={!newEx.name || saving}
                                 className="flex-1 py-4 bg-primary rounded-2xl text-white font-bold heading-bebas tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 disabled:opacity-30 transition-all"
                             >
-                                Add
+                                {saving ? "Saving..." : "Add"}
                             </button>
                         </div>
                     </div>

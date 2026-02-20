@@ -17,6 +17,7 @@ import { WaterTracker } from "./components/WaterTracker";
 import { HistoryView } from "./components/HistoryView";
 import { WorkoutSession } from "./components/WorkoutSession";
 import { PlanEditor } from "./components/PlanEditor";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
 export default function App() {
   const [view, setView] = useState<"today" | "workouts" | "history" | "settings">("today");
@@ -28,6 +29,29 @@ export default function App() {
   // Session settings
   const [withWarmup, setWithWarmup] = useState(true);
   const [soundOn, setSoundOn] = useState(true);
+
+  // Settings edit state
+  const [editName, setEditName] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [editGoal, setEditGoal] = useState(false);
+  const [newGoal, setNewGoal] = useState("");
+  const [editWaterGoal, setEditWaterGoal] = useState(false);
+  const [newWaterGoal, setNewWaterGoal] = useState("");
+  const [editWeight, setEditWeight] = useState(false);
+  const [newWeight, setNewWeight] = useState("");
+
+  // Prevent accidental back navigation during workout
+  useEffect(() => {
+    if (sessionPlan) {
+      const handlePopState = (e: PopStateEvent) => {
+        e.preventDefault();
+        window.history.pushState(null, '', window.location.href);
+      };
+      window.history.pushState(null, '', window.location.href);
+      window.addEventListener('popstate', handlePopState);
+      return () => window.removeEventListener('popstate', handlePopState);
+    }
+  }, [sessionPlan]);
 
   useEffect(() => {
     fetchDB().then(db => {
@@ -91,39 +115,66 @@ export default function App() {
 
   const saveWorkout = async (planKey: string, mins: number) => {
     if (!data) return;
-    const today = todayKey();
-    const entry: WorkoutEntry = { planKey, mins, time: new Date().toISOString() };
+    try {
+      const today = todayKey();
+      const entry: WorkoutEntry = { planKey, mins, time: new Date().toISOString() };
 
-    // Merge new entry with any existing entries for today
-    const newHistory = {
-      ...data.history,
-      [today]: [...(data.history[today] || []), entry]
-    };
+      // Merge new entry with any existing entries for today
+      const newHistory = {
+        ...data.history,
+        [today]: [...(data.history[today] || []), entry]
+      };
 
-    const newStreak = computeStreak(newHistory);
+      const newStreak = computeStreak(newHistory);
 
-    const update = {
-      history: newHistory,
-      profile: { ...data.profile, streak: newStreak }
-    };
+      const update = {
+        history: newHistory,
+        profile: { ...data.profile, streak: newStreak }
+      };
 
-    setData({ ...data, ...update });
-    await updateDB(update);
-    setSessionPlan(null);
+      setData({ ...data, ...update });
+      await updateDB(update);
+      setSessionPlan(null);
+    } catch (e) {
+      console.error('Failed to save workout:', e);
+      alert('Failed to save workout. Please try again.');
+    }
   };
 
   const addWater = async (ml: number) => {
     if (!data) return;
-    const newWater = data.profile.currentWater + ml;
-    const update = {
-      profile: {
-        ...data.profile,
-        currentWater: newWater,
-        lastWaterDate: todayKey(), // keep date fresh on every log
-      }
-    };
-    setData({ ...data, ...update });
-    await updateDB(update);
+    try {
+      const newWater = data.profile.currentWater + ml;
+      const update = {
+        profile: {
+          ...data.profile,
+          currentWater: newWater,
+          lastWaterDate: todayKey(), // keep date fresh on every log
+        }
+      };
+      setData({ ...data, ...update });
+      await updateDB(update);
+    } catch (e) {
+      console.error('Failed to update water intake:', e);
+      alert('Failed to update water intake. Please try again.');
+    }
+  };
+
+  const saveProfileField = async (field: string, value: any) => {
+    if (!data) return;
+    try {
+      const update = {
+        profile: {
+          ...data.profile,
+          [field]: value,
+        }
+      };
+      setData({ ...data, ...update });
+      await updateDB(update);
+    } catch (e) {
+      console.error('Failed to save profile change:', e);
+      alert('Failed to save changes. Please try again.');
+    }
   };
 
   if (loading || !data) {
@@ -140,16 +191,28 @@ export default function App() {
     const plan = data.plans[sessionPlan];
     if (!plan) return null;
     return (
-      <Wrapper>
-        <WorkoutSession
-          plan={plan}
-          planKey={sessionPlan}
-          withWarmup={withWarmup}
-          soundOn={soundOn}
-          onExit={() => setSessionPlan(null)}
-          onComplete={saveWorkout}
-        />
-      </Wrapper>
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999,
+          overscrollBehavior: 'contain'
+        }}
+      >
+        <Wrapper>
+          <WorkoutSession
+            plan={plan}
+            planKey={sessionPlan}
+            withWarmup={withWarmup}
+            soundOn={soundOn}
+            onExit={() => setSessionPlan(null)}
+            onComplete={saveWorkout}
+          />
+        </Wrapper>
+      </div>
     );
   }
 
@@ -157,6 +220,7 @@ export default function App() {
 
   return (
     <Wrapper>
+      <PWAInstallPrompt />
       <div className="pb-24">
         {showEditor ? (
           <PlanEditor
@@ -254,13 +318,177 @@ export default function App() {
                 </div>
                 <div className="glass rounded-[32px] p-6 border-white/5 bg-white/[0.02]">
                   <h3 className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-4 px-1">Profile</h3>
-                  <div className="py-4 border-b border-white/5 flex justify-between items-center">
-                    <span className="text-sm text-gray-400">Name</span>
-                    <span className="font-bold text-sm tracking-wide text-white">{data.profile.name}</span>
+                  
+                  {/* Name */}
+                  <div className="py-4 border-b border-white/5">
+                    {editName ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newName}
+                          onChange={e => setNewName(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
+                          placeholder="Enter name"
+                        />
+                        <button
+                          onClick={async () => {
+                            await saveProfileField("name", newName);
+                            setEditName(false);
+                          }}
+                          className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:scale-105 transition-transform"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditName(false)}
+                          className="px-4 py-2 bg-white/5 text-white text-xs font-bold rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Name</span>
+                        <button
+                          onClick={() => {
+                            setNewName(data.profile.name);
+                            setEditName(true);
+                          }}
+                          className="font-bold text-sm tracking-wide text-white hover:text-primary transition-colors"
+                        >
+                          {data.profile.name} ✎
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="py-4 flex justify-between items-center">
-                    <span className="text-sm text-gray-400">Main Goal</span>
-                    <span className="font-bold text-sm tracking-wide text-white">{data.profile.goal}</span>
+
+                  {/* Goal */}
+                  <div className="py-4 border-b border-white/5">
+                    {editGoal ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newGoal}
+                          onChange={e => setNewGoal(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
+                          placeholder="e.g., Weight Loss, Muscle Gain"
+                        />
+                        <button
+                          onClick={async () => {
+                            await saveProfileField("goal", newGoal);
+                            setEditGoal(false);
+                          }}
+                          className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:scale-105 transition-transform"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditGoal(false)}
+                          className="px-4 py-2 bg-white/5 text-white text-xs font-bold rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Main Goal</span>
+                        <button
+                          onClick={() => {
+                            setNewGoal(data.profile.goal);
+                            setEditGoal(true);
+                          }}
+                          className="font-bold text-sm tracking-wide text-white hover:text-primary transition-colors"
+                        >
+                          {data.profile.goal} ✎
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Current Weight */}
+                  <div className="py-4 border-b border-white/5">
+                    {editWeight ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={newWeight}
+                          onChange={e => setNewWeight(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
+                          placeholder="Weight in kg"
+                        />
+                        <button
+                          onClick={async () => {
+                            await saveProfileField("currentWeight", parseFloat(newWeight));
+                            setEditWeight(false);
+                          }}
+                          className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:scale-105 transition-transform"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditWeight(false)}
+                          className="px-4 py-2 bg-white/5 text-white text-xs font-bold rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Current Weight</span>
+                        <button
+                          onClick={() => {
+                            setNewWeight(data.profile.currentWeight.toString());
+                            setEditWeight(true);
+                          }}
+                          className="font-bold text-sm tracking-wide text-white hover:text-primary transition-colors"
+                        >
+                          {data.profile.currentWeight} kg ✎
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Water Goal */}
+                  <div className="py-4">
+                    {editWaterGoal ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={newWaterGoal}
+                          onChange={e => setNewWaterGoal(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
+                          placeholder="Water goal in ml"
+                        />
+                        <button
+                          onClick={async () => {
+                            await saveProfileField("waterGoal", parseInt(newWaterGoal));
+                            setEditWaterGoal(false);
+                          }}
+                          className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:scale-105 transition-transform"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditWaterGoal(false)}
+                          className="px-4 py-2 bg-white/5 text-white text-xs font-bold rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Water Goal</span>
+                        <button
+                          onClick={() => {
+                            setNewWaterGoal(data.profile.waterGoal.toString());
+                            setEditWaterGoal(true);
+                          }}
+                          className="font-bold text-sm tracking-wide text-white hover:text-primary transition-colors"
+                        >
+                          {data.profile.waterGoal} ml ✎
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

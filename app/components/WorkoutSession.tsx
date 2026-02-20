@@ -90,13 +90,46 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
     }, [running, done, advance, isRest, soundOn, getAudio]);
 
     const [showSteps, setShowSteps] = useState(false);
+    const [holdingExit, setHoldingExit] = useState(false);
+    const [holdingSkip, setHoldingSkip] = useState(false);
+    const exitHoldRef = useRef<NodeJS.Timeout | null>(null);
+    const skipHoldRef = useRef<NodeJS.Timeout | null>(null);
+    const [lastActionTime, setLastActionTime] = useState(0);
 
     const handleStart = () => {
         if (soundOn) playGo(getAudio());
         setRunning(true);
     };
 
-    const skip = () => advance();
+    // Exit requires 1.5 second hold to prevent accidental exit
+    const handleExitPress = () => {
+        setHoldingExit(true);
+        exitHoldRef.current = setTimeout(() => {
+            setHoldingExit(false);
+            onExit();
+        }, 1500);
+    };
+
+    const handleExitRelease = () => {
+        if (exitHoldRef.current) clearTimeout(exitHoldRef.current);
+        setHoldingExit(false);
+    };
+
+    // Skip requires 1 second hold to prevent accidental skip
+    const handleSkipPress = () => {
+        if (Date.now() - lastActionTime < 500) return; // Debounce
+        setHoldingSkip(true);
+        skipHoldRef.current = setTimeout(() => {
+            setHoldingSkip(false);
+            setLastActionTime(Date.now());
+            advance();
+        }, 1000);
+    };
+
+    const handleSkipRelease = () => {
+        if (skipHoldRef.current) clearTimeout(skipHoldRef.current);
+        setHoldingSkip(false);
+    };
 
     const elapsed = Math.round((Date.now() - startTime) / 1000);
     const progressPct = Math.round(((exIdx) / allExercises.length) * 100);
@@ -134,7 +167,18 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
     return (
         <div className="animate-in fade-in duration-500 pb-20">
             <div className="flex items-center gap-4 mb-4">
-                <button onClick={onExit} className="text-gray-500 text-3xl p-2">✕</button>
+                <button 
+                    onMouseDown={handleExitPress}
+                    onMouseUp={handleExitRelease}
+                    onMouseLeave={handleExitRelease}
+                    onTouchStart={handleExitPress}
+                    onTouchEnd={handleExitRelease}
+                    className={`text-3xl p-2 transition-all ${holdingExit ? 'text-red-500 scale-110' : 'text-gray-500 hover:text-gray-400'}`}
+                    title="Hold 1.5s to exit"
+                >
+                    ✕
+                    {holdingExit && <div className="absolute text-[8px] text-red-500 font-bold -mt-1">Hold...</div>}
+                </button>
                 <div className="flex-1">
                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                         <div
@@ -155,16 +199,45 @@ export function WorkoutSession({ plan, planKey, withWarmup, soundOn, onExit, onC
 
             <CircularTimer current={timeLeft} total={total} isRest={isRest} isRunning={running} color={plan.color} />
 
-            <div className="flex items-center justify-center gap-12 mt-8 mb-12">
-                <button onClick={() => setExIdx(0)} className="text-gray-600 text-2xl p-4 active:scale-90 transition-transform text-white">↺</button>
+            <div className="flex items-center justify-center gap-8 mt-10 mb-12">
+                {/* Reset button - increased touch target */}
+                <button 
+                    onMouseDown={() => setExIdx(0)}
+                    onTouchStart={() => setExIdx(0)}
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl text-gray-600 hover:text-white hover:bg-white/5 transition-all active:scale-90" 
+                    title="Reset to first exercise"
+                >
+                    ↺
+                </button>
+
+                {/* Main play/pause button - large touch target */}
                 <button
                     onClick={running ? () => setRunning(false) : handleStart}
-                    className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl transition-all duration-300 ${running ? 'bg-white/5 border border-white/10 text-white' : 'bg-primary text-white shadow-2xl shadow-primary/40 scale-110'}`}
+                    className={`w-28 h-28 rounded-full flex items-center justify-center text-4xl transition-all duration-300 font-bold ${running ? 'bg-white/10 border border-white/20 text-white' : 'bg-primary text-white shadow-2xl shadow-primary/50 scale-110'} active:scale-95`}
+                    style={{ minHeight: '112px', minWidth: '112px' }}
                 >
                     {running ? "⏸" : "▶"}
                 </button>
-                <button onClick={skip} className="text-gray-600 text-2xl p-4 active:scale-90 transition-transform text-white">⏭</button>
+
+                {/* Skip button - hold to prevent accidental skip */}
+                <button 
+                    onMouseDown={handleSkipPress}
+                    onMouseUp={handleSkipRelease}
+                    onMouseLeave={handleSkipRelease}
+                    onTouchStart={handleSkipPress}
+                    onTouchEnd={handleSkipRelease}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl transition-all font-bold ${holdingSkip ? 'text-primary bg-white/10 scale-95' : 'text-gray-600 hover:text-white hover:bg-white/5'}`}
+                    title="Hold to skip exercise"
+                >
+                    ⏭
+                </button>
             </div>
+            
+            {holdingSkip && (
+                <div className="text-center mb-4 text-primary text-sm font-bold animate-pulse">
+                    ⏱ Hold {(1 - Math.max(0, Date.now() - lastActionTime) / 1000).toFixed(1)}s to skip
+                </div>
+            )}
 
             {currentEx?.steps && currentEx.steps.length > 0 && (
                 <div className="mb-12">

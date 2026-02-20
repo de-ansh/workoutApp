@@ -5,12 +5,26 @@ import path from 'path';
 const DB_PATH = path.join(process.cwd(), 'data', 'db.json');
 
 async function readDB() {
-    const data = await fs.readFile(DB_PATH, 'utf-8');
-    return JSON.parse(data);
+    try {
+        const data = await fs.readFile(DB_PATH, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading database:', error);
+        throw new Error('Unable to read database');
+    }
 }
 
 async function writeDB(data: any) {
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    try {
+        // Validate data structure before writing
+        if (!data.profile || !data.plans || !data.history || !data.dailyTips) {
+            throw new Error('Invalid data structure');
+        }
+        await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (error) {
+        console.error('Error writing database:', error);
+        throw new Error('Unable to write database');
+    }
 }
 
 export async function GET() {
