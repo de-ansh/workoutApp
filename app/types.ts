@@ -26,6 +26,8 @@ export interface Profile {
     currentWater: number;
     currentWeight: number;
     streak: number;
+    /** ISO date string (YYYY-MM-DD) of the last day water was tracked */
+    lastWaterDate?: string;
 }
 
 export interface WorkoutEntry {
@@ -36,9 +38,13 @@ export interface WorkoutEntry {
 
 export type History = Record<string, WorkoutEntry[]>;
 
+/** Water intake history: Record<YYYY-MM-DD, ml consumed> */
+export type WaterHistory = Record<string, number>;
+
 export interface DBData {
     profile: Profile;
     plans: Plans;
     history: History;
+    waterHistory: WaterHistory;
     dailyTips: string[];
 }

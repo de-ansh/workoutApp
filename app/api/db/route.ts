@@ -26,11 +26,30 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const data = await readDB();
+        const existing = await readDB();
 
-        // Simple deep merge or replacement based on body structure
-        // For now, let's allow updating specific keys: profile, history, plans
-        const updatedData = { ...data, ...body };
+        // Deep merge: nested objects like history and profile are merged,
+        // not replaced, to prevent data loss on concurrent writes.
+        const updatedData = {
+            ...existing,
+            ...body,
+            // Merge profile fields individually so a partial update doesn't wipe other fields
+            profile: body.profile
+                ? { ...existing.profile, ...body.profile }
+                : existing.profile,
+            // Merge history by date key so new entries don't overwrite old ones
+            history: body.history
+                ? { ...existing.history, ...body.history }
+                : existing.history,
+            // Merge waterHistory by date key
+            waterHistory: body.waterHistory
+                ? { ...existing.waterHistory, ...body.waterHistory }
+                : existing.waterHistory ?? {},
+            // Merge plans if provided
+            plans: body.plans
+                ? { ...existing.plans, ...body.plans }
+                : existing.plans,
+        };
 
         await writeDB(updatedData);
         return NextResponse.json({ success: true, data: updatedData });

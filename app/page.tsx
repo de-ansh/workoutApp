@@ -31,18 +31,76 @@ export default function App() {
 
   useEffect(() => {
     fetchDB().then(db => {
-      if (db) setData(db);
+      if (!db) { setLoading(false); return; }
+
+      const today = todayKey();
+      const lastDate = db.profile.lastWaterDate;
+
+      // If the app is opened on a new day (or first ever use), roll over water
+      if (lastDate && lastDate !== today) {
+        // Archive yesterday's consumption and reset for today
+        const existingWaterHistory = db.waterHistory || {};
+        const updatedWaterHistory = {
+          ...existingWaterHistory,
+          [lastDate]: db.profile.currentWater,
+        };
+        const resetProfile = {
+          ...db.profile,
+          currentWater: 0,
+          lastWaterDate: today,
+        };
+        const rolloverUpdate = {
+          waterHistory: updatedWaterHistory,
+          profile: resetProfile,
+        };
+        // Apply locally and persist
+        const updatedDB = { ...db, ...rolloverUpdate };
+        setData(updatedDB);
+        updateDB(rolloverUpdate);
+      } else {
+        // First time today — just stamp the date if missing
+        if (!lastDate) {
+          const stamp = { profile: { ...db.profile, lastWaterDate: today } };
+          updateDB(stamp);
+          setData({ ...db, profile: { ...db.profile, lastWaterDate: today }, waterHistory: db.waterHistory || {} });
+        } else {
+          setData({ ...db, waterHistory: db.waterHistory || {} });
+        }
+      }
       setLoading(false);
     });
   }, []);
+
+  /** Compute streak from history — counts consecutive calendar days (backwards from today)
+   *  that have at least one completed workout. Ignores future dates. */
+  const computeStreak = (history: DBData["history"]): number => {
+    let count = 0;
+    const d = new Date();
+    // Start checking from today
+    while (true) {
+      const key = d.toISOString().slice(0, 10);
+      if (history[key] && history[key].length > 0) {
+        count++;
+        d.setDate(d.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return count;
+  };
 
   const saveWorkout = async (planKey: string, mins: number) => {
     if (!data) return;
     const today = todayKey();
     const entry: WorkoutEntry = { planKey, mins, time: new Date().toISOString() };
 
-    const newHistory = { ...data.history, [today]: [...(data.history[today] || []), entry] };
-    const newStreak = (data.profile.streak || 0) + 1;
+    // Merge new entry with any existing entries for today
+    const newHistory = {
+      ...data.history,
+      [today]: [...(data.history[today] || []), entry]
+    };
+
+    const newStreak = computeStreak(newHistory);
 
     const update = {
       history: newHistory,
@@ -57,7 +115,13 @@ export default function App() {
   const addWater = async (ml: number) => {
     if (!data) return;
     const newWater = data.profile.currentWater + ml;
-    const update = { profile: { ...data.profile, currentWater: newWater } };
+    const update = {
+      profile: {
+        ...data.profile,
+        currentWater: newWater,
+        lastWaterDate: todayKey(), // keep date fresh on every log
+      }
+    };
     setData({ ...data, ...update });
     await updateDB(update);
   };
@@ -115,8 +179,8 @@ export default function App() {
                   </div>
                 </div>
 
-                <JourneyProgress profile={data.profile} />
-                <WaterTracker current={data.profile.currentWater} goal={data.profile.waterGoal} onAdd={addWater} />
+                <JourneyProgress profile={data.profile} history={data.history} />
+                <WaterTracker current={data.profile.currentWater} goal={data.profile.waterGoal} waterHistory={data.waterHistory} onAdd={addWater} />
 
                 <div className="glass rounded-[32px] p-6 mb-8 premium-gradient soft-shadow relative overflow-hidden">
                   <div className="relative z-10 text-white">
